@@ -17,47 +17,34 @@ d.select <- comb.df |>
     rename(pres = Apis_mellifera) # give a generic name to presence/absence data
 
 # Some dimensions
-# MM = number of sites
-# TT is number of "seasons"
-# JJ = maximum sampling periods per site.season
-MM <- length(unique(d.select$site)) # total number of trees
-TT <- max(d.select$trip)
-JJ <- max(d.select$sample.no.within.trip)
-
+# R =- number of sites
+# J = maximum sampling periods per site
+R <- length(unique(paste0(comb.df$orchard, comb.df$tree))) # total number of trees
+J <- max(comb.df$trip)
 
 # Organise data for unmarked...
-# observations... an M x TJ matrix
+# observations... and R x J matrix of detection non-detection
 y <- d.select |>
-  select(pres, site, sample.no.within.site) |>
+  select(pres, trip, site, sample.no.within.site) |>
   pivot_wider(names_from = sample.no.within.site, values_from = pres) |>
-  select(-site) |>
+  select(-trip, -site) |>
   as.matrix()
 
-# Site covariates dataframe with M rows, column for each covariate
+# Site covariates R rows, column for each covariate
 sc <- d.select |>
     select(orchard, site) |>
     group_by(site) |>
     summarise(orchard = first(orchard))
 
-# site.year covariates, a data frame with MT rows (site-major, season-minor order)
-syc <- d.select |>
-    select(site, trip, sample.no.within.trip) |>
-    mutate (trip2 = trip) |>
-    pivot_wider(names_from = sample.no.within.trip, values_from = trip2) |>
-    select(-site, -trip)
-    
-    
+# site.year covariates
+#syc <- d.select()
 
 # Observation covariates (there is only one at this point)
+# a named list of matrices each RxJ
 oc <- d.select |>
-  select(canopy, site, sample.no.within.site) |>
+  select(canopy, trip, site, sample.no.within.site) |>
   pivot_wider(names_from = sample.no.within.site, values_from = canopy) |>
-  select(-site) |>
+  select(-trip, -site) |>
   as.matrix()
 
-umf <- unmarkedMultFrame(y = y, siteCovs = sc, obsCovs = list(canopy = oc), numPrimary = TT, yearlySiteCovs = syc)
-
-fit <- occu(~ 1 + canopy # detection
-            ~ 1 + trip + , # occupancy
-            data = umf)
-summary(fit)
+umf <- unmarkedFrameOccu(y = y, siteCovs = sc, obsCovs = list(canopy = oc))
