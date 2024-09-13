@@ -6,7 +6,8 @@ library(unmarked)
 # pick a species
 d.select <- comb.df |>
     select(tree, orchard, trip, canopy, contains("Apis")) |> # pick a species
-    mutate(site = paste(orchard, tree, sep = ".")) |> # make a site identifier
+    mutate(site = paste(orchard, tree, trip, sep = ".")) |> # make a site identifier
+                                                            #treat trip as different site for changing occupancy)
     arrange(site, trip) |>
     group_by(site, trip) |>
     mutate(sample.no.within.trip = row_number()) |> # make a within-trip sample number identifier
@@ -19,22 +20,24 @@ d.select <- comb.df |>
 # Some dimensions
 # R =- number of sites
 # J = maximum sampling periods per site
-R <- length(unique(paste0(comb.df$orchard, comb.df$tree))) # total number of trees
-J <- max(comb.df$trip)
+R <- length(unique(d.select$site)) # total number of trees
+J <- max(d.select$sample.no.within.site)
 
 # Organise data for unmarked...
 # observations... and R x J matrix of detection non-detection
 y <- d.select |>
-  select(pres, trip, site, sample.no.within.site) |>
+  select(pres, site, sample.no.within.site) |>
   pivot_wider(names_from = sample.no.within.site, values_from = pres) |>
-  select(-trip, -site) |>
+  select(-site) |>
   as.matrix()
 
 # Site covariates R rows, column for each covariate
 sc <- d.select |>
-    select(orchard, site) |>
+    select(orchard, trip, site) |>
     group_by(site) |>
-    summarise(orchard = first(orchard))
+    summarise(orchard = first(orchard), season = first(trip)) |>
+    ungroup() |>
+    select(-site)
 
 # site.year covariates
 #syc <- d.select()
@@ -48,3 +51,8 @@ oc <- d.select |>
   as.matrix()
 
 umf <- unmarkedFrameOccu(y = y, siteCovs = sc, obsCovs = list(canopy = oc))
+
+fit <- occu(~ 1 + canopy # detection
+            ~ 1 + orchard + season, # occupancy
+            data = umf)
+summary(fit)
