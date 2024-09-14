@@ -1,11 +1,21 @@
+library(readxl)
 library(tidyverse)
 
-data.path <- c("dat/Occupancy")
+data.path <- c("dat")
 
-# species data
-sp.df <- read.csv(file = file.path(data.path, "eDNA_all_species.txt"), sep = "\t")
+# observations with eDNA
+dna.df <- read_xlsx(path = file.path(data.path, "eDNA_detections.xlsx"))
 
-# environment data (trip = season; trip 2 is peak)
-env.df <- read.csv(file = file.path(data.path, "eDNA_env.txt"), sep = "\t")
+# observations with camera
+cam.df <- read_xlsx(path = file.path(data.path, "Camera_detections.xlsx"))
 
-comb.df <- cbind(env.df, sp.df)
+# metadata
+met.df <- read_xlsx(path = file.path(data.path, "Method.xlsx"))
+
+
+
+
+#Three files:
+#  1. camera detections (sample, trip, tree, orchard, temperature, canopy, species-detections)
+#  2. eDNA detections (sample, trip, tree, orchard, temperature, canopy, species-detections)
+#  3. method: group that each column of species belongs to.  Method for splits between the two detection methods.
