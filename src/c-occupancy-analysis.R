@@ -4,18 +4,24 @@ source("src/b-data-organise.R")
 library(unmarked)
 
 # pick a species
-d.select <- comb.df |>
-    select(tree, orchard, trip, canopy, contains("Apis")) |> # pick a species
-    mutate(site = paste(orchard, tree, trip, sep = ".")) |> # make a site identifier
-                                                            #treat trip as different site for changing occupancy)
-    arrange(site, trip) |>
-    group_by(site, trip) |>
-    mutate(sample.no.within.trip = row_number()) |> # make a within-trip sample number identifier
-    ungroup() |>
-    group_by(site) |>
-    mutate(sample.no.within.site = row_number()) |> # make a within site sample number identifier
-    ungroup() |>
-    rename(pres = Apis_mellifera) # give a generic name to presence/absence data
+# selects a data frame with just the explanatory variables and target species
+select_species <- function(comb.df, sp.name = "Apis_mellifera") {
+    d.select <- comb.df |>
+      select(tree, orchard, trip, canopy, contains(sp.name)) |> # pick a species
+      mutate(site = paste(orchard, tree, trip, sep = ".")) |> # make a site identifier
+                                                              #treat trip as different site for changing occupancy)
+      arrange(site, trip) |>
+      group_by(site, trip) |>
+      mutate(sample.no.within.trip = row_number()) |> # make a within-trip sample number identifier
+      ungroup() |>
+      group_by(site) |>
+      mutate(sample.no.within.site = row_number()) |> # make a within site sample number identifier
+      ungroup() |>
+      rename(pres = {{sp.name}}) # give a generic name to presence/absence data
+  d.select
+}
+
+select_species(comb.df, sp.name = "other")
 
 # Some dimensions
 # R =- number of sites
