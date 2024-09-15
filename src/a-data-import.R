@@ -5,12 +5,15 @@ data.path <- c("dat")
 
 # observations with eDNA
 dna.df <- read_xlsx(path = file.path(data.path, "eDNA_detections.xlsx"))
+names(dna.df) <- tolower(names(dna.df))
 
 # observations with camera
 cam.df <- read_xlsx(path = file.path(data.path, "Camera_detections.xlsx"))
+names(cam.df) <- tolower(names(cam.df))
 
 # metadata
 met.df <- read_xlsx(path = file.path(data.path, "Method.xlsx"))
+names(met.df) <- tolower(names(met.df))
 
 
 
