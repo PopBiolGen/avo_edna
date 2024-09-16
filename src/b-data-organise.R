@@ -16,19 +16,20 @@ id_cols <- function(group.name, method.df){
 
 # to aggregate up to the broader taxonomic groups
 aggregate_groups <- function(method.df, obs.df) {
+  browser()
   other.cols <- id_cols("Other", method.df)
   dipt.cols <- id_cols("Diptera", method.df)
   hym.cols <- id_cols("Hymenoptera", method.df)
   
   obs.df.groups <- obs.df |>
-    mutate(other = rowSums(across(any_of(other.cols))),
-           dipt = rowSums(across(any_of(dipt.cols))),
-           hym = rowSums(across(any_of(hym.cols)))) |>
+    mutate(other = rowSums(pick(any_of(other.cols))),
+           dipt = rowSums(pick(any_of(dipt.cols))),
+           hym = rowSums(pick(any_of(hym.cols)))) |>
     select(other, dipt, hym) |>
     mutate(other = as.numeric(other > 0),
             dipt = as.numeric(dipt > 0),
             hym = as.numeric(hym > 0))
-  
+
   cbind(obs.df, obs.df.groups)
 }
 
