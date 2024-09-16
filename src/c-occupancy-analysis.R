@@ -5,9 +5,9 @@ library(unmarked)
 
 # pick a species
 # selects a data frame with just the explanatory variables and target species
-select_species <- function(comb.df, sp.name = "Apis_mellifera") {
+select_species <- function(comb.df, sp.name) {
     d.select <- comb.df |>
-      select(tree, orchard, trip, canopy, contains(sp.name)) |> # pick a species
+      select(tree, orchard, trip, canopy, method, contains(sp.name)) |> # pick a species
       mutate(site = paste(orchard, tree, trip, sep = ".")) |> # make a site identifier
                                                               #treat trip as different site for changing occupancy)
       arrange(site, trip) |>
@@ -21,7 +21,7 @@ select_species <- function(comb.df, sp.name = "Apis_mellifera") {
   d.select
 }
 
-select_species(comb.df, sp.name = "other")
+d.select <- select_species(comb.df, sp.name = "dipt")
 
 # Some dimensions
 # R =- number of sites
@@ -48,17 +48,25 @@ sc <- d.select |>
 # site.year covariates
 #syc <- d.select()
 
-# Observation covariates (there is only one at this point)
+# Observation covariates (canopy and method)
 # a named list of matrices each RxJ
-oc <- d.select |>
+canopy <- d.select |>
   select(canopy, trip, site, sample.no.within.site) |>
   pivot_wider(names_from = sample.no.within.site, values_from = canopy) |>
   select(-trip, -site) |>
   as.matrix()
 
-umf <- unmarkedFrameOccu(y = y, siteCovs = sc, obsCovs = list(canopy = oc))
+method <- d.select |>
+  select(method, trip, site, sample.no.within.site) |>
+  pivot_wider(names_from = sample.no.within.site, values_from = method) |>
+  select(-trip, -site) |>
+  as.matrix()
 
-fit <- occu(~ 1 + canopy # detection
+oc <- list( canopy = canopy, method = method)
+
+umf <- unmarkedFrameOccu(y = y, siteCovs = sc, obsCovs = oc)
+
+fit <- occu(~ 1 + canopy + method # detection
             ~ 1 + orchard + season, # occupancy
             data = umf)
 summary(fit)
