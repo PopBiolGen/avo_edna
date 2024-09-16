@@ -16,7 +16,6 @@ id_cols <- function(group.name, method.df){
 
 # to aggregate up to the broader taxonomic groups
 aggregate_groups <- function(method.df, obs.df) {
-  browser()
   other.cols <- id_cols("Other", method.df)
   dipt.cols <- id_cols("Diptera", method.df)
   hym.cols <- id_cols("Hymenoptera", method.df)
@@ -39,12 +38,12 @@ cam.df <- aggregate_groups(met.cam, cam.df)
 
 dna.agg <- dna.df |>
   rename(canopy = upper_lower) |>
-  select(-contains("_")) |>
+  #select(-contains("_")) |>
   mutate(method = rep("eDNA", n()))
 
 cam.agg <- cam.df |>
   rename(canopy = upper_lower) |>
-  select(-contains("_"), -contains("dae")) |>
+  #select(-contains("_"), -contains("dae")) |>
   mutate(method = rep("Camera", n()))
 
-comb.df <- rbind(dna.agg, cam.agg)
+comb.df <- merge(dna.agg, cam.agg, all = TRUE)

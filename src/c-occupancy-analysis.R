@@ -10,7 +10,7 @@ select_species <- function(comb.df, sp.name) {
       select(tree, orchard, trip, canopy, method, contains(sp.name)) |> # pick a species
       mutate(site = paste(orchard, tree, trip, sep = ".")) |> # make a site identifier
                                                               #treat trip as different site for changing occupancy)
-      arrange(site, trip) |>
+      arrange(site, trip, method) |>
       group_by(site, trip) |>
       mutate(sample.no.within.trip = row_number()) |> # make a within-trip sample number identifier
       ungroup() |>
@@ -21,7 +21,7 @@ select_species <- function(comb.df, sp.name) {
   d.select
 }
 
-d.select <- select_species(comb.df, sp.name = "dipt")
+d.select <- select_species(comb.df, sp.name = "scaptomyza_australis")
 
 # Some dimensions
 # R =- number of sites
@@ -33,6 +33,8 @@ J <- max(d.select$sample.no.within.site)
 # observations... and R x J matrix of detection non-detection
 y <- d.select |>
   select(pres, site, sample.no.within.site) |>
+  mutate(sample.no.within.site = as.factor(sample.no.within.site)) |>
+  complete(sample.no.within.site = levels(sample.no.within.site), fill = list(pres = 0)) |> # if observations missing for this species, fill with zeros
   pivot_wider(names_from = sample.no.within.site, values_from = pres) |>
   select(-site) |>
   as.matrix()
@@ -41,7 +43,7 @@ y <- d.select |>
 sc <- d.select |>
     select(orchard, trip, site) |>
     group_by(site) |>
-    summarise(orchard = first(orchard), season = first(trip)) |>
+    summarise(orchard = first(orchard), season = as.character(first(trip))) |>
     ungroup() |>
     select(-site)
 
@@ -62,7 +64,7 @@ method <- d.select |>
   select(-trip, -site) |>
   as.matrix()
 
-oc <- list( canopy = canopy, method = method)
+oc <- list(canopy = canopy, method = method)
 
 umf <- unmarkedFrameOccu(y = y, siteCovs = sc, obsCovs = oc)
 
