@@ -14,6 +14,7 @@ names(cam.df) <- tolower(names(cam.df))
 # metadata
 met.df <- read_xlsx(path = file.path(data.path, "Method.xlsx"))
 names(met.df) <- tolower(names(met.df))
+met.df$species <- tolower(met.df$species)
 
 
 
