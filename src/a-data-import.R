@@ -17,7 +17,7 @@ names(met.df) <- tolower(names(met.df))
 met.df$species <- tolower(met.df$species)
 
 
-
+rm(data.path)
 
 #Three files:
 #  1. camera detections (sample, trip, tree, orchard, temperature, canopy, species-detections)

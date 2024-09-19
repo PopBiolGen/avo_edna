@@ -24,12 +24,11 @@ aggregate_groups <- function(method.df, obs.df) {
     mutate(other = rowSums(pick(any_of(other.cols))),
            dipt = rowSums(pick(any_of(dipt.cols))),
            hym = rowSums(pick(any_of(hym.cols)))) |>
-    select(other, dipt, hym) |>
     mutate(other = as.numeric(other > 0),
             dipt = as.numeric(dipt > 0),
             hym = as.numeric(hym > 0))
 
-  cbind(obs.df, obs.df.groups)
+  obs.df.groups
 }
 
 # add aggregate groups to each data frame
@@ -38,12 +37,12 @@ cam.df <- aggregate_groups(met.cam, cam.df)
 
 dna.agg <- dna.df |>
   rename(canopy = upper_lower) |>
-  #select(-contains("_")) |>
   mutate(method = rep("eDNA", n()))
 
 cam.agg <- cam.df |>
   rename(canopy = upper_lower) |>
-  #select(-contains("_"), -contains("dae")) |>
   mutate(method = rep("Camera", n()))
 
 comb.df <- merge(dna.agg, cam.agg, all = TRUE)
+
+rm(dna.df, cam.df, dna.agg, cam.agg, met.cam, met.df, met.edna)
