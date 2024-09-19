@@ -10,7 +10,7 @@ sp.names <- colnames(comb.df)[!(colnames(comb.df) %in%
                                   "canopy",
                                   "method"))]
 
-sp.fits <- sapply(sp.names, FUN = "fit_species")
+sp.fits <- lapply(sp.names, FUN = "fit_species")
 names(sp.fits) <- sp.names
 
 save(sp.fits, file = "out/species-fits.RData")
